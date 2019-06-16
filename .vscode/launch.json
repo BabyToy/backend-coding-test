@@ -7,8 +7,28 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Mocha Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "-u", "tdd",
+        "--timeout", "999999",
+        "--colors", "${workspaceFolder}/dist/tests",
+        "--exit"
+      ],
+      "internalConsoleOptions": "openOnSessionStart",
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "skipFiles": ["node_modules/**/*.js", "<node_internals>/**/*.js"],
+      "protocol": "inspector"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Launch Program",
-      "program": "${workspaceFolder}\\index.js"
+      "program": "${workspaceFolder}\\dist\\index.js"
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "skipFiles": ["node_modules/**/*.js", "<node_internals>/**/*.js"],
     }
   ]
 }
