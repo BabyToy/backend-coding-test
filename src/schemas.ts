@@ -1,7 +1,7 @@
-'use strict';
+import { Database } from "sqlite3";
 
-module.exports = (db) => {
-    const createRideTableSchema = `
+export function buildSchemas(db: Database) {
+  const createRideTableSchema = `
         CREATE TABLE Rides
         (
         rideID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -16,7 +16,7 @@ module.exports = (db) => {
         )
     `;
 
-    db.run(createRideTableSchema);
+  db.run(createRideTableSchema);
 
-    return db;
-};
+  return db;
+}
