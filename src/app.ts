@@ -1,8 +1,9 @@
-import bodyParser from 'body-parser';
-import express from 'express';
-import { Database } from 'sqlite3';
+import bodyParser from "body-parser";
+import express from "express";
+import { Database } from "sqlite3";
+import sqlHandler = require("./sqlLiteHandler");
 
-import { Winston } from './logWinston';
+import { Winston } from "./logWinston";
 
 const winston = new Winston("CodingExercise", __dirname);
 
@@ -10,11 +11,10 @@ const app = express();
 
 const jsonParser = bodyParser.json();
 
-export function expressApp(db:Database) {
-  // module.exports = db => {
+export function expressApp(db: Database) {
   app.get("/health", (req, res) => res.send("Healthy"));
 
-  app.post("/rides", jsonParser, (req, res) => {
+  app.post("/rides", jsonParser, async (req, res) => {
     const startLatitude = Number(req.body.start_lat);
     const startLongitude = Number(req.body.start_long);
     const endLatitude = Number(req.body.end_lat);
@@ -75,69 +75,64 @@ export function expressApp(db:Database) {
       req.body.driver_vehicle
     ];
 
-    const result = db.run(
-      "INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      values,
-      function(err) {
-        if (err) {
-          return res.send({
-            error_code: "SERVER_ERROR",
-            message: "Unknown error"
-          });
-        }
-
-        db.all("SELECT * FROM Rides WHERE rideID = ?", this.lastID, function(err, rows) {
-          if (err) {
-            return res.send({
-              error_code: "SERVER_ERROR",
-              message: "Unknown error"
-            });
-          }
-
-          res.send(rows);
-        });
-      }
-    );
+    try {
+      await sqlHandler.run(
+        db,
+        "INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        values
+      );
+      const result = await sqlHandler.run(
+        db,
+        "INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        values
+      );
+      const rows = await sqlHandler.all(
+        db,
+        "INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)"
+      );
+      res.send(rows);
+    } catch (error) {
+      return res.send({
+        error_code: "SERVER_ERROR",
+        message: "Unknown error"
+      });
+    }
   });
 
-  app.get("/rides", (req, res) => {
-    db.all("SELECT * FROM Rides", function(err, rows) {
-      if (err) {
-        return res.send({
-          error_code: "SERVER_ERROR",
-          message: "Unknown error"
-        });
-      }
-
+  app.get("/rides", async (req, res) => {
+    try {
+      const rows = await sqlHandler.all(db, "SELECT * FROM Rides");
       if (rows.length === 0) {
         return res.send({
           error_code: "RIDES_NOT_FOUND_ERROR",
           message: "Could not find any rides"
         });
       }
-
       res.send(rows);
-    });
+    } catch (error) {
+      return res.send({
+        error_code: "SERVER_ERROR",
+        message: "Unknown error"
+      });
+    }
   });
 
-  app.get("/rides/:id", (req, res) => {
-    db.all(`SELECT * FROM Rides WHERE rideID='${req.params.id}'`, function(err, rows) {
-      if (err) {
-        return res.send({
-          error_code: "SERVER_ERROR",
-          message: "Unknown error"
-        });
-      }
-
+  app.get("/rides/:id", async (req, res) => {
+    try {
+      const rows = await sqlHandler.all(db, `SELECT * FROM Rides WHERE rideID='${req.params.id}'`);
       if (rows.length === 0) {
         return res.send({
           error_code: "RIDES_NOT_FOUND_ERROR",
           message: "Could not find any rides"
         });
       }
-
       res.send(rows);
-    });
+    } catch (error) {
+      return res.send({
+        error_code: "SERVER_ERROR",
+        message: "Unknown error"
+      });
+    }
   });
 
   return app;
