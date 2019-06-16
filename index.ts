@@ -1,7 +1,8 @@
 import { json } from "body-parser";
 import express from "express";
 import provider from "sqlite3";
-import winston = require("winston");
+import { Winston } from "./src/logWinston";
+const winston = new Winston("CodingExercise", __dirname);
 
 import { expressApp } from "./src/app";
 import { buildSchemas } from "./src/schemas";
