@@ -1,10 +1,17 @@
-import express from "express";
+import bodyParser from 'body-parser';
+import express from 'express';
+import { Database } from 'sqlite3';
+
+import { Winston } from './logWinston';
+
+const winston = new Winston("CodingExercise", __dirname);
+
 const app = express();
 
-import bodyParser from "body-parser";
 const jsonParser = bodyParser.json();
 
-module.exports = db => {
+export function expressApp(db:Database) {
+  // module.exports = db => {
   app.get("/health", (req, res) => res.send("Healthy"));
 
   app.post("/rides", jsonParser, (req, res) => {
@@ -29,12 +36,7 @@ module.exports = db => {
       });
     }
 
-    if (
-      endLatitude < -90 ||
-      endLatitude > 90 ||
-      endLongitude < -180 ||
-      endLongitude > 180
-    ) {
+    if (endLatitude < -90 || endLatitude > 90 || endLongitude < -180 || endLongitude > 180) {
       return res.send({
         error_code: "VALIDATION_ERROR",
         message:
@@ -84,10 +86,7 @@ module.exports = db => {
           });
         }
 
-        db.all("SELECT * FROM Rides WHERE rideID = ?", this.lastID, function(
-          err,
-          rows
-        ) {
+        db.all("SELECT * FROM Rides WHERE rideID = ?", this.lastID, function(err, rows) {
           if (err) {
             return res.send({
               error_code: "SERVER_ERROR",
@@ -122,10 +121,7 @@ module.exports = db => {
   });
 
   app.get("/rides/:id", (req, res) => {
-    db.all(`SELECT * FROM Rides WHERE rideID='${req.params.id}'`, function(
-      err,
-      rows
-    ) {
+    db.all(`SELECT * FROM Rides WHERE rideID='${req.params.id}'`, function(err, rows) {
       if (err) {
         return res.send({
           error_code: "SERVER_ERROR",
@@ -145,4 +141,4 @@ module.exports = db => {
   });
 
   return app;
-};
+}

@@ -1,24 +1,22 @@
-init("CodingExercise", __dirname);
-info("start of app");
-
+import { json } from "body-parser";
 import express from "express";
+import provider from "sqlite3";
+import winston = require("winston");
+
+import { expressApp } from "./src/app";
+import { buildSchemas } from "./src/schemas";
+
 const app = express();
 const port = 8010;
 
-import { json } from "body-parser";
 const jsonParser = json();
 
-const sqlite3 = require("sqlite3").verbose();
+const sqlite3 = provider.verbose();
 const db = new sqlite3.Database(":memory:");
-
-import buildSchemas from "./src/schemas";
 
 db.serialize(() => {
   buildSchemas(db);
 
-  const app = require("./src/app")(db);
-
-  app.listen(port, () =>
-    console.log(`App started and listening on port ${port}`)
-  );
+  const thisApp = expressApp(db);
+  thisApp.listen(port, () => winston.info(`App started and listening on port ${port}`));
 });
