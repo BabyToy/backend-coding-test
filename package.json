@@ -9,7 +9,7 @@
   "scripts": {
     "compile": "tsc -p .",
     "build": "npm run compile",
-    "test": "mocha --require ts-node/register tests/**/*.ts",
+    "test": "mocha --require ts-node/register --require source-map-support/register --recursive tests/**/*.ts",
     "start": "tsc -p . && node index.js"
   },
   "keywords": [
