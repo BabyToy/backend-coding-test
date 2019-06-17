@@ -16,7 +16,7 @@ const combined = winston.format.combine(
 );
 
 let logDir: string;
-let module: string;
+let moduleName: string;
 
 export class Winston {
   private _level: string;
@@ -28,7 +28,7 @@ export class Winston {
     this.filename = module + ".log";
     const targetPath = parentDir || "";
     logDir = path.join(targetPath, "logs");
-    module = module;
+    moduleName = module;
     winston.level = this._level;
 
     if (!fs.existsSync(logDir)) {
@@ -40,7 +40,7 @@ export class Winston {
         new winston.transports.File({
           format: combined,
           level: "debug",
-          filename: module + ".log",
+          filename: moduleName + ".log",
           dirname: "logs",
           handleExceptions: true
         }),
@@ -64,11 +64,11 @@ export class Winston {
   }
 
   error(text: string) {
-    this.winston.error(module + ": " + text);
+    this.winston.error(moduleName + ": " + text);
   }
 
   info(text: string) {
-    this.winston.info(module + ": " + text);
+    this.winston.info(moduleName + ": " + text);
   }
 
   status(data: { status: string; result: any }) {
@@ -80,7 +80,7 @@ export class Winston {
     if (this.level !== "debug") {
       return;
     }
-    this.winston.debug(`${module}: ${text}`);
+    this.winston.debug(`${moduleName}: ${text}`);
   }
 
   version() {
