@@ -54,14 +54,14 @@ export function expressApp(db: Database) {
     if (typeof driverName !== "string" || driverName.length < 1) {
       return res.send({
         error_code: "VALIDATION_ERROR",
-        message: "Rider name must be a non empty string"
+        message: "Driver name must be a non empty string"
       });
     }
 
     if (typeof driverVehicle !== "string" || driverVehicle.length < 1) {
       return res.send({
         error_code: "VALIDATION_ERROR",
-        message: "Rider name must be a non empty string"
+        message: "Vehicle name must be a non empty string"
       });
     }
 
@@ -76,25 +76,17 @@ export function expressApp(db: Database) {
     ];
 
     try {
-      await sqlHandler.run(
+      const lastId = await sqlHandler.run(
         db,
         "INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)",
         values
       );
-      const result = await sqlHandler.run(
-        db,
-        "INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        values
-      );
-      const rows = await sqlHandler.all(
-        db,
-        "INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)"
-      );
+      const rows = await sqlHandler.all(db, "SELECT * FROM Rides WHERE rideID = ?", lastId);
       res.send(rows);
     } catch (error) {
       return res.send({
         error_code: "SERVER_ERROR",
-        message: "Unknown error"
+        message: error.message
       });
     }
   });
@@ -112,14 +104,14 @@ export function expressApp(db: Database) {
     } catch (error) {
       return res.send({
         error_code: "SERVER_ERROR",
-        message: "Unknown error"
+        message: error.message
       });
     }
   });
 
   app.get("/rides/:id", async (req, res) => {
     try {
-      const rows = await sqlHandler.all(db, `SELECT * FROM Rides WHERE rideID='${req.params.id}'`);
+      const rows = await sqlHandler.all(db, `SELECT * FROM Rides WHERE rideID=${req.params.id}`);
       if (rows.length === 0) {
         return res.send({
           error_code: "RIDES_NOT_FOUND_ERROR",
@@ -130,7 +122,7 @@ export function expressApp(db: Database) {
     } catch (error) {
       return res.send({
         error_code: "SERVER_ERROR",
-        message: "Unknown error"
+        message: error.message
       });
     }
   });

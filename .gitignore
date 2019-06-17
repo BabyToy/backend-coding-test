@@ -61,6 +61,7 @@ typings/
 .next
 
 *.js
+*.js.map
 package-lock.json
 .vscode/
 dist/
