@@ -63,3 +63,4 @@ typings/
 *.js
 package-lock.json
 .vscode/
+dist/
