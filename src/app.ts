@@ -92,26 +92,10 @@ export function expressApp(db: Database) {
   });
 
   app.get("/rides", async (req, res) => {
+    const id = req.query.id;
     try {
-      const rows = await sqlHandler.all(db, "SELECT * FROM Rides");
-      if (rows.length === 0) {
-        return res.send({
-          error_code: "RIDES_NOT_FOUND_ERROR",
-          message: "Could not find any rides"
-        });
-      }
-      res.send(rows);
-    } catch (error) {
-      return res.send({
-        error_code: "SERVER_ERROR",
-        message: error.message
-      });
-    }
-  });
-
-  app.get("/rides/:id", async (req, res) => {
-    try {
-      const rows = await sqlHandler.all(db, `SELECT * FROM Rides WHERE rideID=${req.params.id}`);
+      const sql = "SELECT * FROM Rides" + (id ? ` WHERE rideID=${id}` : "");
+      const rows = await sqlHandler.all(db, sql);
       if (rows.length === 0) {
         return res.send({
           error_code: "RIDES_NOT_FOUND_ERROR",

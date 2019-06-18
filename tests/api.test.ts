@@ -23,7 +23,7 @@ describe("API tests", () => {
     });
   });
 
-  describe(" GET /health", () => {
+  describe("GET /health", () => {
     it("should return health", done => {
       request(thisApp)
         .get("/health")
@@ -46,14 +46,56 @@ describe("API tests", () => {
           driver_vehicle: "vehicle"
         })
         .expect("Content-Type", /json/)
-        .expect(response => {
-          if (response.body.error_code) {
-            console.log(response.body.error_code);
-            console.log(response.body.message);
-            return assert.fail(response.body.message);
-          }
-        })
-        .expect(200, done);
+        .expect(200)
+        .end((error, response) => {
+          assert(response.body.length > 0, "empty list");
+          done();
+        });
+    });
+  });
+
+  describe("GET /rides", () => {
+    it("return rideID 1", done => {
+      const id = 1;
+      request(thisApp)
+        .get("/rides")
+        .query({ id })
+        .expect("Content-Type", /json/)
+        .expect(200)
+        .end((error, response) => {
+          assert(response.body.length, "empty list");
+          assert.strictEqual(response.body[0].rideID, id, "ride not found");
+          done();
+        });
+    });
+
+    it("return list of rides", done => {
+      request(thisApp)
+        .get("/rides")
+        .expect("Content-Type", /json/)
+        .expect(200)
+        .end((error, response) => {
+          assert(response.body.length, "empty list");
+          assert(response.body[0].rideID, "invalid ride ID");
+          done();
+        });
+    });
+
+    it("return RIDES_NOT_FOUND_ERROR for invalid ID", done => {
+      const id = 2;
+      request(thisApp)
+        .get("/rides")
+        .query({ id })
+        .expect("Content-Type", /json/)
+        .expect(200)
+        .end((error, response) => {
+          assert.strictEqual(
+            response.body.error_code,
+            "RIDES_NOT_FOUND_ERROR",
+            response.body.error_code
+          );
+          done();
+        });
     });
   });
 });
