@@ -1,9 +1,9 @@
-import bodyParser from "body-parser";
-import express from "express";
-import { Database } from "sqlite3";
-import sqlHandler = require("./sqlLiteHandler");
+import bodyParser from 'body-parser';
+import express from 'express';
+import { Database } from 'sqlite3';
 
-import { Winston } from "./logWinston";
+import { Winston } from './logWinston';
+import sqlHandler = require('./sqlLiteHandler');
 
 const winston = new Winston("CodingExercise", __dirname);
 
@@ -92,26 +92,19 @@ export function expressApp(db: Database) {
   });
 
   app.get("/rides", async (req, res) => {
+    const { id, pageSize, page } = req.query;
     try {
-      const rows = await sqlHandler.all(db, "SELECT * FROM Rides");
-      if (rows.length === 0) {
-        return res.send({
-          error_code: "RIDES_NOT_FOUND_ERROR",
-          message: "Could not find any rides"
-        });
+      let sql = "SELECT * FROM Rides";
+      if (id) {
+        sql = sql + ` WHERE rideID=${id}`;
+      } else {
+        const size = parseInt(pageSize || 0, 10);
+        if (size > 0) {
+          const pageNum = parseInt(page || 0, 10);
+          sql = sql + ` ORDER BY rideID LIMIT ${pageSize} OFFSET ${pageNum * size}`;
+        }
       }
-      res.send(rows);
-    } catch (error) {
-      return res.send({
-        error_code: "SERVER_ERROR",
-        message: error.message
-      });
-    }
-  });
-
-  app.get("/rides/:id", async (req, res) => {
-    try {
-      const rows = await sqlHandler.all(db, `SELECT * FROM Rides WHERE rideID=${req.params.id}`);
+      const rows = await sqlHandler.all(db, sql);
       if (rows.length === 0) {
         return res.send({
           error_code: "RIDES_NOT_FOUND_ERROR",
